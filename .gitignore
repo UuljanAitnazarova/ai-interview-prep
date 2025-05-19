@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environment
+venv/
+.env
+.env.*
+*.env
+
+# Database
+*.sqlite3
+*.db
+
+# Alembic
+alembic/versions/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Test cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# AWS credentials (if any)
+.aws/
+
+# Node (if you add frontend here)
+node_modules/
+dist/
+build/
