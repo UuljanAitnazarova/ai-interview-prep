@@ -1,9 +1,8 @@
-from sqlalchemy import text
-from db.session import engine
+from app.models.models import Question
+from app.db.session import SessionLocal
 
-try:
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT 1"))
-        print("✅ Connection successful!", result.scalar())
-except Exception as e:
-    print("❌ Connection failed:", e)
+db = SessionLocal()
+sample = Question(text="What is FastAPI?", category="technical")
+db.add(sample)
+db.commit()
+
