@@ -1,4 +1,4 @@
-import os, shutil
+import os, shutil, json
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.models import models
@@ -6,6 +6,8 @@ from app.db.session import get_db
 from app.schemas.recording import RecordingResponse, RecordingCreate
 from datetime import datetime, timezone
 from app.utils.transcription import upload_file, transcribe_audio
+from app.utils.feedback import generate_feedback
+
 
 router = APIRouter(prefix="/recordings", tags=["recordings"])
 UPLOAD_DIR = "uploads"
@@ -36,6 +38,8 @@ def create_recording(question_id: int = Form(...), file: UploadFile = File(...),
     upload_url = upload_file(filepath)
     transcript = transcribe_audio(upload_url)
     recording.transcript = transcript
+    feedback = generate_feedback(transcript)
+    recording.feedback_json = json.loads(feedback)
     db.add(recording)
     db.commit()
     db.refresh(recording)
