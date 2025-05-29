@@ -2,7 +2,10 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
-class RecordingBase(BaseModel):
+class RecordingCreate(BaseModel):
+    question_id: int
+
+class RecordingResponse(BaseModel):
     id: int
     question_id: int
     recording_url: str
@@ -13,9 +16,5 @@ class RecordingBase(BaseModel):
     user_id: Optional[int] = None
     feedback_json: Optional[dict] = None
 
-class RecordingCreate(RecordingBase):
-    pass
-
-class RecordingResponse(RecordingBase):
     class Config:
         orm_mode = True
