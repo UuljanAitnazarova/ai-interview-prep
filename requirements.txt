@@ -8,3 +8,8 @@ passlib[bcrypt]
 pydantic
 python-dotenv
 pytest
+pytest-asyncio
+httpx
+pytest-cov
+pytest-mock
+python-multipart

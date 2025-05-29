@@ -3,7 +3,6 @@ from typing import Optional
 from app.enums.question_category import QuestionCategory
 
 class QuestionBase(BaseModel):
-    id: int
     text: str
     category: Optional[QuestionCategory] = None
 

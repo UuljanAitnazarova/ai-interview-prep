@@ -24,4 +24,4 @@ def generate_feedback(transcript: str) -> dict:
     )
 
     feedback_text = completion.choices[0].message.content
-    return feedback_text  # We'll parse it if needed
+    return feedback_text 
