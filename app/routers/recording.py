@@ -7,7 +7,8 @@ from app.schemas.recording import RecordingResponse, RecordingCreate
 from datetime import datetime, timezone
 from app.utils.transcription import upload_file, transcribe_audio
 from app.utils.feedback import generate_feedback
-
+from app.auth.users import current_active_user
+from app.models.user import User
 
 router = APIRouter(prefix="/recordings", tags=["recordings"])
 UPLOAD_DIR = "uploads"
@@ -15,8 +16,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.get("/", response_model=list[RecordingResponse])
-def get_recordings(db: Session = Depends(get_db)):
-    recordings = db.query(models.Recording).all()
+def get_recordings(db: Session = Depends(get_db), user: User = Depends(current_active_user)):
+    recordings = db.query(models.Recording).filter(models.Recording.user_id == user.id).all()
     return recordings
 
 

@@ -15,7 +15,8 @@ load_dotenv()
 # Import your Base + models
 from app.db.config import settings
 from app.db.session import Base
-from app.models import models
+from app.models.models import Question, Recording
+from app.models.user import User
 
 # Alembic Config
 config = context.config
