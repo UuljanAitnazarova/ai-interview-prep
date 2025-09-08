@@ -22,7 +22,7 @@ def get_recordings(db: Session = Depends(get_db), user: User = Depends(current_a
 
 
 @router.post("/", response_model=RecordingResponse)
-def create_recording(question_id: int = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
+def create_recording(question_id: int = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(current_active_user)):
     timestamp = datetime.now(timezone.utc).timestamp()
     filename = f"{timestamp}_{file.filename}"
     filepath = os.path.join(UPLOAD_DIR, filename)
@@ -33,6 +33,7 @@ def create_recording(question_id: int = Form(...), file: UploadFile = File(...),
     recording = models.Recording(
         question_id=question_id,
         recording_url=filepath,
+        user_id=user.id,
         created_at=now,
         updated_at=now,
     )
@@ -44,5 +45,6 @@ def create_recording(question_id: int = Form(...), file: UploadFile = File(...),
     db.add(recording)
     db.commit()
     db.refresh(recording)
+    feedback = generate_feedback(transcript)
     return recording
 

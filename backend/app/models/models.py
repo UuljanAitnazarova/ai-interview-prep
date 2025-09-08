@@ -10,11 +10,15 @@ class Question(Base):
     id = Column(Integer, primary_key=True, index=True)
     text = Column(String, nullable=False)
     category = Column(String, nullable=True)
+    job_title = Column(String, nullable=True)
+    job_description = Column(Text, nullable=True)
+    is_generated = Column(Boolean, default=False)
+    created_at = Column(DateTime, nullable=True)
 
 
 class Recording(Base):
     __tablename__ = "recordings"
-    id = Column(Integer, primary_key=True, index=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
     user = relationship("User", back_populates="recordings")
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
