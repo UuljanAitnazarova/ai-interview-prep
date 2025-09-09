@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Clock, Play, Download, Trash2, Mic, Star, Calendar, Filter, Search, MoreVertical } from 'lucide-react';
 import { recordingsAPI } from '../services/api';
 
 const RecordingsPage = () => {
+    const navigate = useNavigate();
     const [recordings, setRecordings] = useState([]);
     const [filteredRecordings, setFilteredRecordings] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -123,18 +125,18 @@ const RecordingsPage = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">My Recordings</h1>
-                    <p className="text-gray-600 mt-1">{recordings.length} recorded responses</p>
+                    <h1 className="text-3xl font-bold text-gray-900">Feedback & Analysis</h1>
+                    <p className="text-gray-600 mt-1">{recordings.length} practice sessions with AI feedback</p>
                 </div>
                 <button
                     onClick={() => {
                         // Navigate to practice page to start a new recording
-                        window.location.href = '/practice';
+                        navigate('/practice');
                     }}
                     className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
                 >
                     <Mic className="w-4 h-4" />
-                    <span>New Recording</span>
+                    <span>New Practice Session</span>
                 </button>
             </div>
 
@@ -237,10 +239,10 @@ const RecordingsPage = () => {
             ) : (
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                     <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-600 mb-2">No recordings found</h3>
+                    <h3 className="text-lg font-semibold text-gray-600 mb-2">No feedback sessions found</h3>
                     <p className="text-gray-500 mb-6">
                         {recordings.length === 0
-                            ? "Start practicing to see your recordings here"
+                            ? "Start practicing to see your AI feedback and analysis here"
                             : "Try adjusting your search criteria"
                         }
                     </p>
@@ -248,11 +250,11 @@ const RecordingsPage = () => {
                         <button
                             onClick={() => {
                                 // Navigate to practice page to start recording
-                                window.location.href = '/practice';
+                                navigate('/practice');
                             }}
                             className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                         >
-                            Start Recording
+                            Start Practice Session
                         </button>
                     )}
                 </div>

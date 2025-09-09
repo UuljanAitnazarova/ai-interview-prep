@@ -111,7 +111,7 @@ const HomePage = ({ onQuestionSelect }) => {
                         <Mic className="w-6 h-6 text-green-600" />
                     </div>
                     <div className="text-2xl font-bold text-gray-900 mb-1">{stats.totalRecordings}</div>
-                    <div className="text-sm text-gray-600">Recordings Made</div>
+                    <div className="text-sm text-gray-600">Practice Sessions</div>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
@@ -178,7 +178,7 @@ const HomePage = ({ onQuestionSelect }) => {
                 {/* Recent Recordings */}
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-gray-900">Recent Recordings</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">Recent Practice Sessions</h2>
                         <button
                             onClick={() => navigate('/recordings')}
                             className="text-blue-600 hover:text-blue-700 font-medium text-sm"

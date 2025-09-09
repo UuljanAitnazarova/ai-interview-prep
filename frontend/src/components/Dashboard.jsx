@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Mic, MessageCircle, Clock, User, LogOut, Menu, X } from 'lucide-react';
+import { Mic, MessageCircle, BarChart3, User, LogOut, Menu, X } from 'lucide-react';
 
 const Dashboard = ({ user, onLogout, children }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -10,7 +10,7 @@ const Dashboard = ({ user, onLogout, children }) => {
     const navigation = [
         { name: 'Home', href: '/', icon: Mic },
         { name: 'Questions', href: '/questions', icon: MessageCircle },
-        { name: 'Recordings', href: '/recordings', icon: Clock },
+        { name: 'Feedback', href: '/recordings', icon: BarChart3 },
         { name: 'Practice', href: '/practice', icon: Mic },
         { name: 'Generate', href: '/generate', icon: MessageCircle },
     ];

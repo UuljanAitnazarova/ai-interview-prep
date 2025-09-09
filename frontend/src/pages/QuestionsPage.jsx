@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Filter, Search, Plus, Clock, Star, Tag, ChevronDown, Edit, Trash2 } from 'lucide-react';
 import { questionsAPI } from '../services/api';
 import { questionStorage } from '../services/questionStorage';
 import QuestionModal from '../components/QuestionModal';
 
 const QuestionsPage = () => {
+    const navigate = useNavigate();
     const [questions, setQuestions] = useState([]);
     const [filteredQuestions, setFilteredQuestions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedDifficulty, setSelectedDifficulty] = useState('all');
     const [selectedRole, setSelectedRole] = useState('all');
+    const [selectedCompany, setSelectedCompany] = useState('all');
     const [isLoading, setIsLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -29,13 +32,46 @@ const QuestionsPage = () => {
         return ['all', ...roles];
     };
 
+    // Get unique companies from questions
+    const getUniqueCompanies = () => {
+        const companies = questions
+            .filter(q => q.company)
+            .map(q => q.company)
+            .filter((company, index, self) => self.indexOf(company) === index)
+            .sort();
+        return ['all', ...companies];
+    };
+
+    // Group questions by role
+    const groupQuestionsByRole = (questions) => {
+        const groups = {};
+
+        questions.forEach(question => {
+            const role = question.role || 'General Questions';
+            if (!groups[role]) {
+                groups[role] = {
+                    role: role === 'General Questions' ? null : role,
+                    questions: []
+                };
+            }
+            groups[role].questions.push(question);
+        });
+
+        // Convert to array and sort by role name
+        return Object.values(groups).sort((a, b) => {
+            if (!a.role) return 1; // General Questions at the end
+            if (!b.role) return -1;
+            return a.role.localeCompare(b.role);
+        });
+    };
+
     useEffect(() => {
         fetchQuestions();
     }, []);
 
     useEffect(() => {
         filterQuestions();
-    }, [questions, searchTerm, selectedCategory, selectedDifficulty, selectedRole]);
+    }, [questions, searchTerm, selectedCategory, selectedDifficulty, selectedRole, selectedCompany]);
 
     const fetchQuestions = async () => {
         try {
@@ -72,6 +108,7 @@ const QuestionsPage = () => {
             filtered = filtered.filter(q =>
                 q.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (q.role && q.role.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (q.company && q.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (q.reasoning && q.reasoning.toLowerCase().includes(searchTerm.toLowerCase()))
             );
         }
@@ -86,6 +123,10 @@ const QuestionsPage = () => {
 
         if (selectedRole !== 'all') {
             filtered = filtered.filter(q => q.role && q.role.toLowerCase().includes(selectedRole.toLowerCase()));
+        }
+
+        if (selectedCompany !== 'all') {
+            filtered = filtered.filter(q => q.company && q.company.toLowerCase().includes(selectedCompany.toLowerCase()));
         }
 
         setFilteredQuestions(filtered);
@@ -211,7 +252,7 @@ const QuestionsPage = () => {
                 {/* Filter Options */}
                 {showFilters && (
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* Category Filter */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
@@ -259,71 +300,127 @@ const QuestionsPage = () => {
                                     ))}
                                 </select>
                             </div>
+
+                            {/* Company Filter */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                                <select
+                                    value={selectedCompany}
+                                    onChange={(e) => setSelectedCompany(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                    {getUniqueCompanies().map(company => (
+                                        <option key={company} value={company}>
+                                            {company === 'all' ? 'All Companies' : company}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Questions Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredQuestions.map((question) => (
-                    <div key={question.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-6 border border-gray-100">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center space-x-2">
-                                <span className="text-2xl">{getCategoryIcon(question.category)}</span>
-                                <div>
-                                    <h3 className="font-semibold text-gray-900 capitalize">{question.category}</h3>
-                                    <div className="flex items-center space-x-2 mt-1">
-                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty_level)}`}>
-                                            {question.difficulty_level}
-                                        </span>
-                                        {question.role && (
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                {question.role}
-                                            </span>
-                                        )}
-                                        {question.is_generated && (
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Generated
-                                            </span>
-                                        )}
+            {/* Questions List */}
+            <div className="space-y-6">
+                {groupQuestionsByRole(filteredQuestions).map((group) => (
+                    <div key={group.role || 'general'} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        {/* Role Header */}
+                        {group.role && (
+                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-4 border-b border-gray-100">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                                        <Tag className="w-4 h-4 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-900">{group.role}</h3>
+                                        <p className="text-sm text-gray-600">{group.questions.length} questions</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-1">
-                                <button
-                                    onClick={() => handleEditQuestion(question)}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                                    title="Edit question"
-                                >
-                                    <Edit className="w-4 h-4 text-gray-400 hover:text-blue-500" />
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteQuestion(question.id)}
-                                    className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                                    title="Delete question"
-                                >
-                                    <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
-                                </button>
-                            </div>
-                        </div>
+                        )}
 
-                        <p className="text-gray-700 mb-4 line-clamp-3">{question.question_text}</p>
+                        {/* Questions List */}
+                        <div className="divide-y divide-gray-100">
+                            {group.questions.map((question, index) => (
+                                <div key={question.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center space-x-3 mb-3">
+                                                <span className="text-xl">{getCategoryIcon(question.category)}</span>
+                                                <div className="flex items-center space-x-2">
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty_level)}`}>
+                                                        {question.difficulty_level}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 capitalize">{question.category}</span>
+                                                    {question.company && (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                            {question.company}
+                                                        </span>
+                                                    )}
+                                                    {question.is_generated && (
+                                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            AI Generated
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
 
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                <Clock className="w-4 h-4" />
-                                <span>2-3 min</span>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    // Navigate to practice page with this question selected
-                                    window.location.href = '/practice';
-                                }}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-                            >
-                                Practice
-                            </button>
+                                            <p className="text-gray-900 text-base leading-relaxed mb-4">{question.question_text}</p>
+
+                                            {question.reasoning && (
+                                                <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                                                    <p className="text-sm text-blue-800">
+                                                        <span className="font-medium">Why this question:</span> {question.reasoning}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                                    <div className="flex items-center space-x-1">
+                                                        <Clock className="w-4 h-4" />
+                                                        <span>2-3 min</span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-1">
+                                                        <Star className="w-4 h-4" />
+                                                        <span>Practice</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            navigate('/practice', {
+                                                                state: {
+                                                                    selectedQuestion: question
+                                                                }
+                                                            });
+                                                        }}
+                                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                                                    >
+                                                        Practice
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEditQuestion(question)}
+                                                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                                        title="Edit question"
+                                                    >
+                                                        <Edit className="w-4 h-4 text-gray-400 hover:text-blue-500" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteQuestion(question.id)}
+                                                        className="p-2 hover:bg-red-100 rounded-lg transition-colors"
+                                                        title="Delete question"
+                                                    >
+                                                        <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 ))}
@@ -334,7 +431,14 @@ const QuestionsPage = () => {
                 <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                     <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-600 mb-2">No questions found</h3>
-                    <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+                    <p className="text-gray-500 mb-6">Try adjusting your search or filter criteria</p>
+                    <button
+                        onClick={handleCreateQuestion}
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Create First Question</span>
+                    </button>
                 </div>
             )}
 
