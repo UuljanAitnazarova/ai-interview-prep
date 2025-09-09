@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Play, Pause } from 'lucide-react';
 
-const AudioRecorder = ({ onRecordingComplete, isUploading }) => {
+const AudioRecorder = ({ onRecordingComplete, isUploading, isTrialUsed = false, onAuthRequired }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [recordingTime, setRecordingTime] = useState(0);
@@ -186,14 +186,37 @@ const AudioRecorder = ({ onRecordingComplete, isUploading }) => {
                         </div>
                     </div>
 
+                    {isTrialUsed && (
+                        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <div className="text-center">
+                                <div className="text-amber-800 font-medium mb-2">
+                                    Free Trial Used
+                                </div>
+                                <p className="text-sm text-amber-700 mb-3">
+                                    You've used your free trial. Sign up to unlock unlimited personalized feedback.
+                                </p>
+                                <button
+                                    onClick={onAuthRequired}
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-blue-600 hover:to-indigo-700 transition-all duration-200"
+                                >
+                                    Sign Up Now
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex justify-center space-x-4">
                         {!isRecording ? (
                             <button
                                 onClick={startRecording}
-                                className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                                disabled={isTrialUsed}
+                                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors ${isTrialUsed
+                                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                    : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
                             >
                                 <Mic className="w-5 h-5" />
-                                <span>Start Recording</span>
+                                <span>{isTrialUsed ? 'Sign Up to Record' : 'Start Recording'}</span>
                             </button>
                         ) : (
                             <>
