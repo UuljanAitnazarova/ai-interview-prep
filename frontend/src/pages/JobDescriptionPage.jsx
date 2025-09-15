@@ -4,6 +4,8 @@ import { questionStorage } from '../services/questionStorage';
 
 const JobDescriptionPage = () => {
     const [jobDescription, setJobDescription] = useState('');
+    const [roleName, setRoleName] = useState('');
+    const [companyName, setCompanyName] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedQuestions, setGeneratedQuestions] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
@@ -36,10 +38,13 @@ const JobDescriptionPage = () => {
 
         setIsGenerating(true);
 
-        // Extract role from job description (simple extraction)
-        const roleMatch = jobDescription.match(/(?:position|role|job)\s+(?:of\s+)?(?:a\s+)?([A-Z][a-zA-Z\s]+?)(?:\s|,|\.|$)/i);
-        const extractedRole = roleMatch ? roleMatch[1].trim() : 'General Role';
-        setExtractedRole(extractedRole);
+        // Use provided role name or extract from job description
+        let finalRole = roleName.trim();
+        if (!finalRole) {
+            const roleMatch = jobDescription.match(/(?:position|role|job)\s+(?:of\s+)?(?:a\s+)?([A-Z][a-zA-Z\s]+?)(?:\s|,|\.|$)/i);
+            finalRole = roleMatch ? roleMatch[1].trim() : 'General Role';
+        }
+        setExtractedRole(finalRole);
 
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -51,7 +56,8 @@ const JobDescriptionPage = () => {
                 category: "technical",
                 difficulty_level: "medium",
                 reasoning: "Tests technical knowledge relevant to the job",
-                role: extractedRole,
+                role: finalRole,
+                company: companyName.trim() || 'This Company',
                 is_generated: true
             },
             {
@@ -60,7 +66,8 @@ const JobDescriptionPage = () => {
                 category: "situational",
                 difficulty_level: "hard",
                 reasoning: "Evaluates problem-solving approach",
-                role: extractedRole,
+                role: finalRole,
+                company: companyName.trim() || 'This Company',
                 is_generated: true
             },
             {
@@ -69,7 +76,8 @@ const JobDescriptionPage = () => {
                 category: "behavioral",
                 difficulty_level: "medium",
                 reasoning: "Assesses interpersonal skills",
-                role: extractedRole,
+                role: finalRole,
+                company: companyName.trim() || 'This Company',
                 is_generated: true
             },
             {
@@ -78,7 +86,8 @@ const JobDescriptionPage = () => {
                 category: "behavioral",
                 difficulty_level: "easy",
                 reasoning: "Tests motivation and cultural fit",
-                role: extractedRole,
+                role: finalRole,
+                company: companyName.trim() || 'This Company',
                 is_generated: true
             },
             {
@@ -87,7 +96,8 @@ const JobDescriptionPage = () => {
                 category: "behavioral",
                 difficulty_level: "easy",
                 reasoning: "Evaluates continuous learning mindset",
-                role: extractedRole,
+                role: finalRole,
+                company: companyName.trim() || 'This Company',
                 is_generated: true
             }
         ];
@@ -146,6 +156,8 @@ const JobDescriptionPage = () => {
         // Clear the generated questions
         setGeneratedQuestions([]);
         setJobDescription('');
+        setRoleName('');
+        setCompanyName('');
         setUploadedFile(null);
     };
 
@@ -225,6 +237,36 @@ const JobDescriptionPage = () => {
                             </button>
                         </div>
                     )}
+                </div>
+
+                {/* Role and Company Input */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Role Name (Optional)
+                        </label>
+                        <input
+                            type="text"
+                            value={roleName}
+                            onChange={(e) => setRoleName(e.target.value)}
+                            placeholder="e.g., Software Engineer, Product Manager"
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Leave empty to auto-extract from job description</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Company Name (Optional)
+                        </label>
+                        <input
+                            type="text"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            placeholder="e.g., Google, Microsoft, Startup Inc"
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Will be used in generated questions</p>
+                    </div>
                 </div>
 
                 {/* Text Input */}

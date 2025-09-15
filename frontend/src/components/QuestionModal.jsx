@@ -7,6 +7,7 @@ const QuestionModal = ({ isOpen, onClose, onSave, editingQuestion = null }) => {
         category: editingQuestion?.category || 'behavioral',
         difficulty_level: editingQuestion?.difficulty_level || 'medium',
         role: editingQuestion?.role || '',
+        company: editingQuestion?.company || '',
         reasoning: editingQuestion?.reasoning || ''
     });
     const [errors, setErrors] = useState({});
@@ -187,19 +188,34 @@ const QuestionModal = ({ isOpen, onClose, onSave, editingQuestion = null }) => {
                         </div>
                     </div>
 
-                    {/* Role (Optional) */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Role (Optional)
-                        </label>
-                        <input
-                            type="text"
-                            name="role"
-                            value={formData.role}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="e.g., Software Engineer, Product Manager"
-                        />
+                    {/* Role and Company */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Role (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                name="role"
+                                value={formData.role}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g., Software Engineer, Product Manager"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Company (Optional)
+                            </label>
+                            <input
+                                type="text"
+                                name="company"
+                                value={formData.company}
+                                onChange={handleInputChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g., Google, Microsoft, Startup Inc"
+                            />
+                        </div>
                     </div>
 
                     {/* Reasoning (Optional) */}

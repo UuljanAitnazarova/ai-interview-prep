@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Mic, Play, Pause, Square, RotateCcw, Settings, Timer, Target, TrendingUp } from 'lucide-react';
 import { questionsAPI } from '../services/api';
 import AudioRecorder from '../components/AudioRecorder';
 import FeedbackDisplay from '../components/FeedbackDisplay';
 
 const PracticePage = () => {
+    const location = useLocation();
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [currentRecording, setCurrentRecording] = useState(null);
@@ -29,10 +31,14 @@ const PracticePage = () => {
     }, []);
 
     useEffect(() => {
-        if (questions.length > 0) {
+        // Check if a specific question was passed via navigation state
+        if (location.state?.selectedQuestion) {
+            setCurrentQuestion(location.state.selectedQuestion);
+            setPracticeMode('specific');
+        } else if (questions.length > 0) {
             selectNextQuestion();
         }
-    }, [questions, practiceMode, selectedCategory, selectedDifficulty]);
+    }, [questions, practiceMode, selectedCategory, selectedDifficulty, location.state]);
 
     const fetchQuestions = async () => {
         try {
@@ -47,6 +53,11 @@ const PracticePage = () => {
     };
 
     const selectNextQuestion = () => {
+        // If we're in specific mode and already have a question, don't change it
+        if (practiceMode === 'specific' && currentQuestion) {
+            return;
+        }
+
         let filteredQuestions = questions;
 
         if (selectedCategory !== 'all') {
@@ -124,6 +135,12 @@ const PracticePage = () => {
     const handleNextQuestion = () => {
         setCurrentRecording(null);
         setShowFeedback(false);
+
+        // If we're in specific mode, switch to random mode for next question
+        if (practiceMode === 'specific') {
+            setPracticeMode('random');
+        }
+
         selectNextQuestion();
     };
 
@@ -211,12 +228,19 @@ const PracticePage = () => {
                         <select
                             value={practiceMode}
                             onChange={(e) => setPracticeMode(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            disabled={practiceMode === 'specific'}
+                            className={`w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${practiceMode === 'specific' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         >
                             <option value="random">Random Questions</option>
                             <option value="category">By Category</option>
                             <option value="difficulty">By Difficulty</option>
+                            <option value="specific" disabled>Specific Question (Selected from Questions page)</option>
                         </select>
+                        {practiceMode === 'specific' && (
+                            <p className="mt-1 text-sm text-blue-600">
+                                Practicing with a specific question. Click "Next Question" to switch to random mode.
+                            </p>
+                        )}
                     </div>
                     {practiceMode === 'category' && (
                         <div className="flex-1">
@@ -275,8 +299,8 @@ const PracticePage = () => {
                                     {currentQuestion.category}
                                 </span>
                                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${currentQuestion.difficulty_level === 'easy' ? 'bg-green-100 text-green-800' :
-                                        currentQuestion.difficulty_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
+                                    currentQuestion.difficulty_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
                                     }`}>
                                     {currentQuestion.difficulty_level}
                                 </span>
